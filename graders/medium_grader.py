@@ -80,7 +80,7 @@ def final_score(state, task_def) -> float:
     is derived directly from the terminal state so the three objectives are distinguishable.
     """
     if state.blackout_occurred:
-        return 0.0
+        return 0.001
 
     # ── Voltage score: fraction of buses within 0.95–1.05 pu ─────────────────
     buses_ok = sum(1 for b in state.buses if 0.95 <= b.voltage_pu <= 1.05)
@@ -101,9 +101,11 @@ def final_score(state, task_def) -> float:
     )
 
     return round(
-        0.35 * voltage_score +
-        0.30 * freq_score +
-        0.25 * line_score +
-        0.10 * shed_score,
+        max(0.001, min(0.999,
+            0.35 * voltage_score +
+            0.30 * freq_score +
+            0.25 * line_score +
+            0.10 * shed_score
+        )),
         4,
     )

@@ -104,10 +104,12 @@ def final_score(state, task_def) -> float:
     crit_score = max(0.0, 1.0 - state.critical_load_shed_mw / 50.0)
 
     return round(
-        0.30 * survival +
-        0.25 * freq_score +
-        0.20 * voltage_score +
-        0.15 * cascade_score +
-        0.10 * crit_score,
+        max(0.001, min(0.999,
+            0.30 * survival +
+            0.25 * freq_score +
+            0.20 * voltage_score +
+            0.15 * cascade_score +
+            0.10 * crit_score
+        )),
         4
     )

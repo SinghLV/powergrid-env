@@ -71,7 +71,7 @@ def final_score(state, task_def) -> float:
       0.20  no_blackout   – 1.0 if episode ended without blackout, 0.0 otherwise
     """
     if state.blackout_occurred:
-        return 0.0
+        return 0.001
 
     max_steps = task_def["max_steps"]
 
@@ -84,4 +84,4 @@ def final_score(state, task_def) -> float:
     shed_score  = max(0.0, 1.0 - state.critical_load_shed_mw / 30.0)
     no_blackout = 1.0  # guaranteed true if we reached this branch
 
-    return round(0.50 * line_score + 0.30 * shed_score + 0.20 * no_blackout, 4)
+    return round(max(0.001, min(0.999, 0.50 * line_score + 0.30 * shed_score + 0.20 * no_blackout)), 4)
