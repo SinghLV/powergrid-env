@@ -118,6 +118,7 @@ def run_task(client, task_id: str, verbose: bool = False) -> float:  # client: o
     env = PowerGridEnv(task_id=task_id)
     obs = env.reset()
 
+    print(f"[START] task={task_id}", flush=True)
     print(f"\n{'='*65}")
     print(f"START  |  PowerGridEnv Task: {task_id.upper()}")
     print(f"  Buses: {len(obs.buses)}  Lines: {len(obs.lines)}  Generators: {len(obs.generators)}")
@@ -137,6 +138,7 @@ def run_task(client, task_id: str, verbose: bool = False) -> float:  # client: o
         obs, reward, done, info = env.step(action)
         total_rew += reward.value
 
+        print(f"[STEP] step={info['step']} reward={reward.value:.4f}", flush=True)
         if verbose:
             print(f"STEP {info['step']:02d}: {action.action_type:16s} "
                   f"target={action.target_id:8s} "
@@ -149,6 +151,7 @@ def run_task(client, task_id: str, verbose: bool = False) -> float:  # client: o
 
     score = env.final_score()
     print(f"\nEND  |  Steps: {info['step']}  |  Total reward: {total_rew:+.3f}  |  Score: {score:.4f}")
+    print(f"[END] task={task_id} score={score:.4f} steps={info['step']}", flush=True)
     return score
 
 
@@ -160,6 +163,7 @@ def run_task_dry(task_id: str, verbose: bool = False) -> float:
     env = PowerGridEnv(task_id=task_id)
     obs = env.reset()
 
+    print(f"[START] task={task_id}", flush=True)
     print(f"\n{'='*65}")
     print(f"START  |  PowerGridEnv [DRY-RUN] Task: {task_id.upper()}")
     print(f"  Buses: {len(obs.buses)}  Lines: {len(obs.lines)}  Generators: {len(obs.generators)}")
@@ -173,6 +177,7 @@ def run_task_dry(task_id: str, verbose: bool = False) -> float:
                         reasoning="dry-run smoke test")
         obs, reward, done, info = env.step(action)
         total_rew += reward.value
+        print(f"[STEP] step={info['step']} reward={reward.value:.4f}", flush=True)
         if verbose:
             print(f"STEP {info['step']:02d}: do_nothing  "
                   f"f={info['frequency_hz']:.2f}Hz  "
@@ -184,6 +189,7 @@ def run_task_dry(task_id: str, verbose: bool = False) -> float:
 
     score = env.final_score()
     print(f"\nEND  |  Steps: {info['step']}  |  Total reward: {total_rew:+.3f}  |  Score: {score:.4f}")
+    print(f"[END] task={task_id} score={score:.4f} steps={info['step']}", flush=True)
     return score
 
 
