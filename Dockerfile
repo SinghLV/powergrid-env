@@ -16,4 +16,5 @@ EXPOSE 7860
 
 # Default: smoke-test all three tasks without an LLM token.
 # To run the full LLM baseline: docker run -e HF_TOKEN=hf_xxx <image> python inference.py --task all --verbose
-CMD ["python", "inference.py", "--dry-run", "--task", "all", "--verbose"]
+CMD ["sh", "-c", "python inference.py --dry-run --task all --verbose && echo 'Simulation Complete. Serving results...' && python -m http.server 7860"]
+

@@ -1,3 +1,12 @@
+---
+title: PowerGridEnv
+emoji: ⚡
+colorFrom: blue
+colorTo: yellow
+sdk: docker
+pinned: false
+---
+
 # ⚡ PowerGridEnv — AI Power Grid Failure Prevention
 
 > An OpenEnv-compliant real-world reinforcement learning environment where an AI grid

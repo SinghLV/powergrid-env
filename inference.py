@@ -25,11 +25,9 @@ import sys
 # without having the openai package installed.
 from environment import Action, PowerGridEnv
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", os.environ.get("HF_TOKEN", ""))
-BASE_URL  = os.environ.get("OPENENV_BASE_URL",
-            "https://api-inference.huggingface.co/v1")
-MODEL_ID  = os.environ.get("OPENENV_MODEL",
-            "meta-llama/Meta-Llama-3-8B-Instruct")
+HF_TOKEN = os.environ.get("HF_TOKEN", os.environ.get("OPENAI_API_KEY", ""))
+API_BASE_URL = os.environ.get("API_BASE_URL", "https://api-inference.huggingface.co/v1")
+MODEL_NAME = os.environ.get("MODEL_NAME", "meta-llama/Meta-Llama-3-8B-Instruct")
 
 SYSTEM_PROMPT = """You are an AI power grid operator. Your job is to prevent
 blackouts by issuing control actions in real time.
@@ -101,7 +99,7 @@ Output ONE JSON action object now:"""
 
 def query_model(client, prompt: str) -> dict:  # client: openai.OpenAI
     resp = client.chat.completions.create(
-        model=MODEL_ID,
+        model=MODEL_NAME,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user",   "content": prompt},
@@ -121,7 +119,7 @@ def run_task(client, task_id: str, verbose: bool = False) -> float:  # client: o
     obs = env.reset()
 
     print(f"\n{'='*65}")
-    print(f"  PowerGridEnv  |  Task: {task_id.upper()}")
+    print(f"START  |  PowerGridEnv Task: {task_id.upper()}")
     print(f"  Buses: {len(obs.buses)}  Lines: {len(obs.lines)}  Generators: {len(obs.generators)}")
     print(f"{'='*65}")
 
@@ -140,7 +138,7 @@ def run_task(client, task_id: str, verbose: bool = False) -> float:  # client: o
         total_rew += reward.value
 
         if verbose:
-            print(f"  [{info['step']:02d}] {action.action_type:16s} "
+            print(f"STEP {info['step']:02d}: {action.action_type:16s} "
                   f"target={action.target_id:8s} "
                   f"f={info['frequency_hz']:.2f}Hz "
                   f"rew={reward.value:+.3f}  {reward.message[:60]}")
@@ -150,7 +148,7 @@ def run_task(client, task_id: str, verbose: bool = False) -> float:  # client: o
             break
 
     score = env.final_score()
-    print(f"\n  Steps: {info['step']}  |  Total reward: {total_rew:+.3f}  |  Score: {score:.4f}")
+    print(f"\nEND  |  Steps: {info['step']}  |  Total reward: {total_rew:+.3f}  |  Score: {score:.4f}")
     return score
 
 
@@ -163,7 +161,7 @@ def run_task_dry(task_id: str, verbose: bool = False) -> float:
     obs = env.reset()
 
     print(f"\n{'='*65}")
-    print(f"  PowerGridEnv [DRY-RUN]  |  Task: {task_id.upper()}")
+    print(f"START  |  PowerGridEnv [DRY-RUN] Task: {task_id.upper()}")
     print(f"  Buses: {len(obs.buses)}  Lines: {len(obs.lines)}  Generators: {len(obs.generators)}")
     print(f"{'='*65}")
 
@@ -176,7 +174,7 @@ def run_task_dry(task_id: str, verbose: bool = False) -> float:
         obs, reward, done, info = env.step(action)
         total_rew += reward.value
         if verbose:
-            print(f"  [{info['step']:02d}] do_nothing  "
+            print(f"STEP {info['step']:02d}: do_nothing  "
                   f"f={info['frequency_hz']:.2f}Hz  "
                   f"rew={reward.value:+.3f}  {reward.message[:60]}")
         if done:
@@ -185,7 +183,7 @@ def run_task_dry(task_id: str, verbose: bool = False) -> float:
             break
 
     score = env.final_score()
-    print(f"\n  Steps: {info['step']}  |  Total reward: {total_rew:+.3f}  |  Score: {score:.4f}")
+    print(f"\nEND  |  Steps: {info['step']}  |  Total reward: {total_rew:+.3f}  |  Score: {score:.4f}")
     return score
 
 
@@ -213,8 +211,8 @@ def main() -> None:
             scores[tid] = run_task_dry(tid, verbose=args.verbose)
     else:
         # ── LLM mode: requires OPENAI_API_KEY + openai package ───────────────────
-        if not OPENAI_API_KEY:
-            print("ERROR: OPENAI_API_KEY (or HF_TOKEN) environment variable is not set.", file=sys.stderr)
+        if not HF_TOKEN:
+            print("ERROR: HF_TOKEN (or OPENAI_API_KEY) environment variable is not set.", file=sys.stderr)
             print("       Run with --dry-run to validate without a token.", file=sys.stderr)
             sys.exit(1)
         try:
@@ -222,7 +220,7 @@ def main() -> None:
         except ImportError:
             print("ERROR: 'openai' package not installed. Run: pip install openai", file=sys.stderr)
             sys.exit(1)
-        client = OpenAI(api_key=OPENAI_API_KEY, base_url=BASE_URL)
+        client = OpenAI(api_key=HF_TOKEN, base_url=API_BASE_URL)
         for tid in tasks:
             scores[tid] = run_task(client, tid, verbose=args.verbose)
 
