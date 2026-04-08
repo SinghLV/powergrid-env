@@ -14,4 +14,4 @@ COPY . .
 # HuggingFace Spaces serves on port 7860
 EXPOSE 7860
 
-CMD ["sh", "-c", "python inference.py --dry-run --task all --verbose && echo 'Simulation Complete. Starting server...' && uvicorn app:app --host 0.0.0.0 --port 7860"]
+CMD ["sh", "-c", "python inference.py --dry-run --task all --verbose && echo 'Simulation Complete. Starting server...' && uvicorn server.app:app --host 0.0.0.0 --port 7860"]
