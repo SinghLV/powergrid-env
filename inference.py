@@ -25,11 +25,11 @@ import sys
 # without having the openai package installed.
 from environment import Action, PowerGridEnv
 
-HF_TOKEN  = os.environ.get("HF_TOKEN", "")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", os.environ.get("HF_TOKEN", ""))
 BASE_URL  = os.environ.get("OPENENV_BASE_URL",
             "https://api-inference.huggingface.co/v1")
 MODEL_ID  = os.environ.get("OPENENV_MODEL",
-            "mistralai/Mistral-7B-Instruct-v0.3")
+            "meta-llama/Meta-Llama-3-8B-Instruct")
 
 SYSTEM_PROMPT = """You are an AI power grid operator. Your job is to prevent
 blackouts by issuing control actions in real time.
@@ -212,9 +212,9 @@ def main() -> None:
         for tid in tasks:
             scores[tid] = run_task_dry(tid, verbose=args.verbose)
     else:
-        # ── LLM mode: requires HF_TOKEN + openai package ───────────────────
-        if not HF_TOKEN:
-            print("ERROR: HF_TOKEN environment variable is not set.", file=sys.stderr)
+        # ── LLM mode: requires OPENAI_API_KEY + openai package ───────────────────
+        if not OPENAI_API_KEY:
+            print("ERROR: OPENAI_API_KEY (or HF_TOKEN) environment variable is not set.", file=sys.stderr)
             print("       Run with --dry-run to validate without a token.", file=sys.stderr)
             sys.exit(1)
         try:
@@ -222,7 +222,7 @@ def main() -> None:
         except ImportError:
             print("ERROR: 'openai' package not installed. Run: pip install openai", file=sys.stderr)
             sys.exit(1)
-        client = OpenAI(api_key=HF_TOKEN, base_url=BASE_URL)
+        client = OpenAI(api_key=OPENAI_API_KEY, base_url=BASE_URL)
         for tid in tasks:
             scores[tid] = run_task(client, tid, verbose=args.verbose)
 
