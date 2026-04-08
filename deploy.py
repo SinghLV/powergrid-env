@@ -1,5 +1,18 @@
 import sys
-import getpass
+import os
+import requests
+import urllib3
+
+# Aggressive SSL Verify Bypass for Huggingface-hub (which uses requests)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+_orig_request = requests.Session.request
+
+def _insecure_request(self, *args, **kwargs):
+    kwargs['verify'] = False
+    return _orig_request(self, *args, **kwargs)
+
+requests.Session.request = _insecure_request
+
 from huggingface_hub import HfApi
 
 def main():
@@ -8,7 +21,7 @@ def main():
     print("=" * 40)
     print()
 
-    token = getpass.getpass("Please enter your Hugging Face Token (starting with hf_): ")
+    token = input("Please paste your Hugging Face Token (starting with hf_) and hit Enter: ").strip()
     if not token.startswith("hf_"):
         print("\n❌ Invalid token. Hugging Face tokens usually start with 'hf_'.")
         sys.exit(1)

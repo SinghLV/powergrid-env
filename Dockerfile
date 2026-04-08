@@ -14,7 +14,4 @@ COPY . .
 # HuggingFace Spaces serves on port 7860
 EXPOSE 7860
 
-# Default: smoke-test all three tasks without an LLM token.
-# To run the full LLM baseline: docker run -e HF_TOKEN=hf_xxx <image> python inference.py --task all --verbose
-CMD ["sh", "-c", "python inference.py --dry-run --task all --verbose && echo 'Simulation Complete. Serving results...' && python -m http.server 7860"]
-
+CMD ["sh", "-c", "python inference.py --dry-run --task all --verbose && echo 'Simulation Complete. Starting server...' && uvicorn app:app --host 0.0.0.0 --port 7860"]
