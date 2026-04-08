@@ -44,3 +44,8 @@ async def state_endpoint():
 @app.get("/")
 async def root():
     return {"status": "running"}
+
+def main():
+    import uvicorn
+    # Default openenv runs on 7860
+    uvicorn.run("app:app", host="0.0.0.0", port=7860)
