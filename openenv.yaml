@@ -1,0 +1,89 @@
+name: powergrid-failure-prevention
+version: "1.0.0"
+license: MIT
+description: >
+  A real-world power grid failure prevention environment where an AI operator
+  must issue control actions (generator redispatch, load shedding, line switching,
+  capacitor switching) to prevent cascading blackouts across three progressively
+  harder scenarios: single line overload, multi-objective voltage/frequency crisis,
+  and an N-2 storm contingency with island risk.
+
+author: Parth
+tags:
+  - openenv
+  - power-systems
+  - energy
+  - real-world
+  - safety-critical
+  - control
+
+python_requires: ">=3.10"
+
+interface:
+  observation: Observation
+  action: Action
+  reward: Reward
+
+entry_point: environment:PowerGridEnv
+
+tasks:
+  - id: easy
+    description: Single line overload after generator trip. Redispatch standby gas turbine.
+    difficulty: easy
+    max_steps: 10
+    reward_range: [-1.0, 1.0]
+    reward_function: >
+      +0.15 per step L1-2 loading < 90%;
+      +0.05 per step frequency in 49.5–50.5 Hz;
+      -0.05 per step do_nothing while overloaded;
+      -0.10 per step critical load shed;
+      -1.00 on blackout (terminal).
+
+  - id: medium
+    description: Heatwave – simultaneous voltage collapse + frequency deviation + line congestion.
+    difficulty: medium
+    max_steps: 15
+    reward_range: [-1.0, 1.0]
+    reward_function: >
+      +0.10 all voltages 0.95–1.05 pu;
+      +0.08 frequency 49.8–50.2 Hz;
+      +0.07 all lines < 95% loading;
+      -0.15 voltage emergency zone (< 0.90 or > 1.10 pu);
+      -0.10 frequency outside 49.5–50.5 Hz;
+      -0.12 critical load shed;
+      -1.00 on blackout (terminal).
+
+  - id: hard
+    description: N-2 storm contingency – cascading failure prevention with island risk and critical load protection.
+    difficulty: hard
+    max_steps: 20
+    reward_range: [-1.0, 1.0]
+    reward_function: >
+      +0.12 frequency 49.5–50.5 Hz;
+      +0.10 all voltages 0.92–1.08 pu;
+      +0.08 no lines overloaded;
+      -0.08 frequency < 49.0 Hz;
+      -0.10 critical bus load shed;
+      -0.12 island risk created;
+      -1.00 on blackout (terminal).
+
+action_space:
+  - redispatch        # ramp a generator's MW output (ramp-rate-limited)
+  - shed_load         # reduce load on a bus (avoid critical is_critical=True buses)
+  - switch_line       # open or close a transmission line
+  - switch_capacitor  # switch reactive compensation bank (+0.02 pu voltage on target bus)
+  - do_nothing        # explicit no-op
+
+observation_components:
+  - buses (voltage_pu, load_mw, load_mvar, is_critical)
+  - lines (flow_mw, capacity_mw, loading_pct, status)
+  - generators (output_mw, min_mw, max_mw, ramp_rate_mw_per_step, gen_type)
+  - alerts (severity: warning | critical | emergency)
+  - grid_frequency_hz
+  - step / max_steps
+  - previous_actions
+
+huggingface:
+  space_sdk: docker
+  tags:
+    - openenv
