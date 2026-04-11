@@ -8,7 +8,7 @@ description: >
   harder scenarios: single line overload, multi-objective voltage/frequency crisis,
   and an N-2 storm contingency with island risk.
 
-author: Parth
+author: Team CodeWars
 tags:
   - openenv
   - power-systems

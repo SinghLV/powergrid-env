@@ -12,16 +12,6 @@ pinned: false
 > An OpenEnv-compliant real-world reinforcement learning environment where an AI grid
 > operator must prevent cascading blackouts through real-time control actions.
 
-```mermaid
-graph TD
-    A[Environment Physics] -->|Observation| B(AI Agent / LLM)
-    B -->|Action: redispatch/shed/switch| A
-    A -->|Monitor| C{Stability Check}
-    C -->|Normal| D[Continue Step]
-    C -->|Violation| E[Blackout Penalty]
-    C -->|Task End| F[Final Score 0-1]
-```
-
 [![openenv](https://img.shields.io/badge/openenv-compatible-blue)](https://openenv.dev)
 [![domain](https://img.shields.io/badge/domain-energy%20%2F%20power%20systems-orange)]()
 [![tasks](https://img.shields.io/badge/tasks-3%20%28easy%20→%20hard%29-green)]()
@@ -172,17 +162,6 @@ A **terminal blackout penalty of −1.00** ends the episode immediately.
 | **Easy** | `0.50 × line_safe_fraction + 0.30 × shed_protection + 0.20 × no_blackout` |
 | **Medium** | `0.35 × voltage_score + 0.30 × freq_score + 0.25 × line_score + 0.10 × shed_protection` |
 | **Hard** | `0.30 × survival + 0.25 × freq_score + 0.20 × voltage_score + 0.15 × cascade_protection + 0.10 × critical_load_protection` |
-
----
-
-## 🤖 Agentic Evaluation Readiness (Phase 2)
-
-This environment is specifically hardened for the **Meta Hackathon Phase 2 Agentic Evaluation**:
-
-1.  **Lazy Initialization**: Environment resources are initialized lazily inside endpoint calls to prevent static analysis crashes during the import phase.
-2.  **Structured Output**: The `inference.py` script utilizes `[START]`, `[STEP]`, and `[END]` tags with `flush=True` for reliable parsing by automated evaluators.
-3.  **Score Clamping**: Final scores are strictly in the range `(0.001, 0.999)` as required by the grader (no rejection of 0.0 or 1.0).
-4.  **Dry-Run Mode**: Supports `--dry-run` to validate the entire environment loop locally without needing a model API key.
 
 ---
 
